@@ -17,9 +17,11 @@
     overflow-x: hidden;
   }
 }
+
 .input-box{
-  @apply bg-white p-6 rounded-lg shadow-md shadow-gray-100 border border-gray-200/50;
+  @apply bg-white px-3 py-2 rounded-md border border-gray-300 flex items-center gap-2;
 }
+
 
 .btn-primary{
   @apply w-full text-sm font-medium text-white bg-primary shadow-lg shadow-purple-600/5 p-[10px] rounded-md my-1 hover:bg-blue-600/15 hover:text-blue-600 cursor-pointer;
