@@ -199,41 +199,58 @@ const updateTaskStatus = async (req,res)=>{
 // @desc Update tasks checklist
 // @route PUT /api/tasks/:id/todo
 // @access Private
-const updateTaskChecklist = async (req,res) =>{
-    try{
-        const {todoChecklist} = req.body;
-        const task = await Task.findById(req.params.id);
-        if(!task) return res.status(400).json({message:"Task Not Found"});
-        if(!task.assignedTo.includes(req.user._id) && req.user.role !== "admin"){
-            return res.status(403).json({message:"Not authorized to update checklist"});
-        }
-        task.todoChecklist = todoChecklist; // Replace with updated checklist
+const updateTaskChecklist = async (req, res) => {
+  try {
+    const { todoChecklist } = req.body;
 
-        // Auto-update progress based on check list completion
-        const completedCount = task.todoChecklist.filter(
-            (item)=>item.completed
-        ).length;
-        const totalItems = task.todoChecklist.length;
-        task.progress = 
-            totalItems > 0 ? Math.round((completedCount/totalItems)*100):0;
-            // Auto mark task as completed if all items are checked
-            if(task.progress === 100){
-                task.status = "Completed";
-            }else if(task.progress > 0){
-                task.status = "In Progress";
-            }else{
-                task.status = "Pending";
-            }
-        await task.save();
-        const updatedTask = await Task.findById(req.params.id).populate(
-            "assignedTo",
-            "name email profileImageUrl"
-        )
-        res.json({message:"Task checkList Updated",task : upatedTask});
-    }catch(error){
-        res.status(500).json({message:"Server error",error:error.message});
+    if (!Array.isArray(todoChecklist)) {
+      return res.status(400).json({ message: "todoChecklist must be an array" });
     }
+
+    const task = await Task.findById(req.params.id);
+    if (!task) return res.status(404).json({ message: "Task Not Found" });
+
+    const isAssigned = task.assignedTo.some(
+      (userId) => userId.toString() === req.user._id.toString()
+    );
+
+    if (!isAssigned && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Not authorized to update checklist" });
+    }
+
+    task.todoChecklist = todoChecklist;
+
+    const completedCount = task.todoChecklist.filter(
+      (item) => item.completed
+    ).length;
+
+    const totalItems = task.todoChecklist.length;
+
+    task.progress =
+      totalItems > 0 ? Math.round((completedCount / totalItems) * 100) : 0;
+
+    if (task.progress === 100) task.status = "Completed";
+    else if (task.progress > 0) task.status = "In Progress";
+    else task.status = "Pending";
+
+    await task.save();
+
+    const updatedTask = await Task.findById(req.params.id).populate(
+      "assignedTo",
+      "name email profileImageUrl"
+    );
+
+    res.json({ message: "Task checklist updated", task: updatedTask });
+  } catch (error) {
+    console.error("🔥 updateTaskChecklist ERROR:", error);
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+      stack: error.stack,
+    });
+  }
 };
+
 
 // @desc DashBoard Data (Admin Only)
 //@route GET /api/tasks/dashboard-data
