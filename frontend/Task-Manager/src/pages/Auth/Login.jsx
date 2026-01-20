@@ -70,7 +70,7 @@ const Login = () => {
         <Input value={password} onChange={({target})=>{setPassword(target.value)}} label="Password" placeholder = "Enter Your Password" type="password"></Input>
         {error && <p className="text-red-500 text-xs pb-2.5">{error}</p>}
 
-        <button type='submit' className='btn-primary'>LOGIN</button>
+        <button type='submit' className="loginbtn btn-primary">LOGIN</button>
         <p className='text-[13px] text-slate-800 mt-3'>
           Dont have an account ? {" "}
           <Link className="font-medium text-primary" to="/signup">SIGNUP</Link>
