@@ -132,7 +132,9 @@ const createTask = async (req, res) => {
                     sendTaskAssignmentEmail(
                         user.email,
                         user.name,
+                        task._id,
                         title,
+                        task.createdAt,
                         dueDate,
                         priority,
                         dashboardLink
