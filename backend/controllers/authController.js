@@ -132,11 +132,17 @@ const updateUserProfile = async (req, res) => {
 // @access Private (Returns JWT)
 const changePassword = async (req, res) => {
     try {
-        const { currentPassword, newPassword } = req.body;
+        const { currentPassword, newPassword, accessToken } = req.body;
         const user = await User.findById(req.user.id);
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
+        }
+
+        // Verify Access Token (Extra Security)
+        const validAccessToken = process.env.ACCESS_TOKEN_SECRET || "admin123"; // Fallback for dev
+        if (accessToken !== validAccessToken) {
+            return res.status(403).json({ message: "Invalid Access Token" });
         }
 
         // Verify current password
