@@ -1,0 +1,12 @@
+{
+    "buildCommand": "cd frontend/Task-Manager && npm install && npm run build",
+    "outputDirectory": "frontend/Task-Manager/dist",
+    "installCommand": "cd frontend/Task-Manager && npm install",
+    "framework": "vite",
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}
