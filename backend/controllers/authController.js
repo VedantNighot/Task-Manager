@@ -45,7 +45,7 @@ const registerUser = async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
-            profileImageUrl: user.profileImegUrl,
+            profileImageUrl: user.profileImageUrl,
             token: generateToken(user._id),
         });
     } catch (error) {
