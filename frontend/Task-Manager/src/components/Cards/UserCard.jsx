@@ -10,7 +10,11 @@ const UserCard = ({ userInfo }) => {
             <img
               src={userInfo.profileImageUrl}
               alt="Avatar"
-              className="w-12 h-12 rounded-full border-2 border-white"
+              className="w-12 h-12 rounded-full border-2 border-white object-cover"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.parentElement.innerHTML = `<div class="w-12 h-12 rounded-full bg-blue-100/50 flex items-center justify-center text-sm font-bold text-primary border-2 border-white">${userInfo?.name?.[0]?.toUpperCase() || "U"}</div>`;
+              }}
             />
           ) : (
             <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-sm font-medium">
