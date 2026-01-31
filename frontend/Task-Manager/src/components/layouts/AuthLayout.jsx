@@ -12,7 +12,7 @@ const AuthLayout = ({ children }) => {
         <div className="relative flex items-center justify-center">
           <img
             src={UI_IMG}
-            className="w-[70%] max-w-[400px] drop-shadow-2xl transition-transform duration-300"
+            className="w-[80%] max-w-[500px] drop-shadow-2xl transition-transform duration-300"
             alt="Task Manager Dashboard"
           />
         </div>
