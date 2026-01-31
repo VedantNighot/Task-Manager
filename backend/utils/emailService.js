@@ -9,8 +9,15 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-const sendTaskAssignmentEmail = async (email, name, taskTitle, dueDate, dashboardLink) => {
+const sendTaskAssignmentEmail = async (email, name, taskTitle, dueDate, priority, dashboardLink) => {
     try {
+        const priorityColors = {
+            High: "#ef4444", // Red
+            Medium: "#f59e0b", // Amber
+            Low: "#10b981", // Emerald
+        };
+        const priorityColor = priorityColors[priority] || "#3b82f6";
+
         const mailOptions = {
             from: process.env.EMAIL_USER,
             to: email,
@@ -22,7 +29,11 @@ const sendTaskAssignmentEmail = async (email, name, taskTitle, dueDate, dashboar
                     
                     <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb;">
                         <h3 style="margin: 0 0 10px 0; color: #111;">${taskTitle}</h3>
-                        <p style="margin: 0; color: #555;"><strong>📅 Deadline:</strong> ${new Date(dueDate).toLocaleString()}</p>
+                        <p style="margin: 5px 0; color: #555;"><strong>📅 Deadline:</strong> ${new Date(dueDate).toLocaleString()}</p>
+                        <p style="margin: 5px 0; color: #555;">
+                            <strong>⚡ Priority:</strong> 
+                            <span style="color: ${priorityColor}; font-weight: bold;">${priority}</span>
+                        </p>
                     </div>
                     
                     <p style="color: #555;">Please prioritize this task and update your progress on the dashboard.</p>

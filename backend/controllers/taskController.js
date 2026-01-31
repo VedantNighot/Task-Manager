@@ -130,6 +130,7 @@ const createTask = async (req, res) => {
                         user.name,
                         title,
                         dueDate,
+                        priority,
                         dashboardLink
                     );
                 }
