@@ -8,8 +8,14 @@ const AuthLayout = ({ children }) => {
         <h2 className="text-lg font-medium text-black">Task Manager</h2>
         {children}
       </div>
-      <div className="hidden md:flex w-[40vw] h-screen items-center justify-center bg-blue-50 bg-[url('/bg-img.jpg')] bg-cover bg-no-repeat bg-center overflow-hidden p-8">
-        <img src={UI_IMG} className="w-64 lg:w-[90%]" />
+      <div className="hidden md:flex w-[40vw] h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-blue-50 bg-[url('/bg-img.jpg')] bg-cover bg-no-repeat bg-center overflow-hidden p-8">
+        <div className="relative">
+          <img
+            src={UI_IMG}
+            className="w-full max-w-md lg:max-w-lg xl:max-w-xl drop-shadow-2xl transform hover:scale-105 transition-transform duration-300"
+            alt="Task Manager Dashboard"
+          />
+        </div>
       </div>
     </div>
   );
