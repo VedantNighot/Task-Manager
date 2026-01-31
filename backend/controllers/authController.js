@@ -1,6 +1,8 @@
 const User = require("../models/User");
+const Invite = require("../models/Invite");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 // Generate Web Token
 
@@ -8,7 +10,7 @@ const generateToken = (userId) => {
     return jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 // desc Register a new User
-// @route POST /api/auth/registeer
+// @route POST /api/auth/register
 // @access Public
 const registerUser = async (req, res) => {
     try {
@@ -19,12 +21,24 @@ const registerUser = async (req, res) => {
         if (userExists) {
             return res.status(400).json({ message: "User already exists" });
         }
-        // determiine user role: Admin if correct token is provided, otherwise Members
+
+        // determine user role: Admin if correct token is provided
         let role = "member";
-        if (
-            adminInviteToken &&
-            adminInviteToken == process.env.ADMIN_INVITE_TOKEN
-        ) { role = "admin" }
+        if (adminInviteToken) {
+            // Check hardcoded env token OR dynamic invite code
+            const isEnvTokenValid = adminInviteToken === process.env.ADMIN_INVITE_TOKEN;
+            const invite = await Invite.findOne({ code: adminInviteToken, isUsed: false });
+
+            if (isEnvTokenValid || invite) {
+                role = "admin";
+                if (invite) {
+                    invite.isUsed = true;
+                    await invite.save();
+                }
+            } else {
+                return res.status(400).json({ message: "Invalid Admin Invite Token" });
+            }
+        }
 
         // Hash Password
         const salt = await bcrypt.genSalt(10);
@@ -163,4 +177,28 @@ const changePassword = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, loginUser, getUserProfile, updateUserProfile, changePassword };
+// @desc Generate Admin Invite Code
+// @route POST /api/auth/generate-invite
+// @access Private (Admin Only)
+const generateInviteCode = async (req, res) => {
+    try {
+        // Ensure only admin can generate
+        const user = await User.findById(req.user.id);
+        if (!user || user.role !== "admin") {
+            return res.status(403).json({ message: "Not authorized as admin" });
+        }
+
+        const code = crypto.randomBytes(4).toString("hex").toUpperCase(); // e.g. "8F3A2B1C"
+
+        await Invite.create({
+            code,
+            createdBy: user._id,
+        });
+
+        res.json({ message: "Invite code generated", code });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+module.exports = { registerUser, loginUser, getUserProfile, updateUserProfile, changePassword, generateInviteCode };

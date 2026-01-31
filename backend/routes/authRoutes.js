@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerUser, loginUser, getUserProfile, updateUserProfile, changePassword } = require("../controllers/authController");
+const { registerUser, loginUser, getUserProfile, updateUserProfile, changePassword, generateInviteCode } = require("../controllers/authController");
 const { protect } = require("../middlewares/authMiddleware");
 const upload = require("../middlewares/uploadMiddleware");
 const router = express.Router();
@@ -11,6 +11,7 @@ router.post("/login", loginUser); //Login User
 router.get("/profile", protect, getUserProfile); //Get user Profile
 router.put("/profile", protect, updateUserProfile); //Update Profile
 router.post("/change-password", protect, changePassword); //Change Password
+router.post("/generate-invite", protect, generateInviteCode); //Generate Admin Invite
 
 router.post("/upload-image", upload.single("image"), (req, res) => {
 
