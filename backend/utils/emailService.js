@@ -1,35 +1,24 @@
-const nodemailer = require("nodemailer");
+const axios = require("axios");
 require("dotenv").config();
 
-const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-    connectionTimeout: 20000, // 20 seconds
-    greetingTimeout: 20000,   // 20 seconds
-    socketTimeout: 20000,     // 20 seconds
-    tls: {
-        rejectUnauthorized: false // Helps with cert issues on some hosts
-    }
-});
-
-// Verify connection configuration
-transporter.verify(function (error, success) {
-    if (error) {
-        console.error("SMTP Connection Error:", error);
-        console.log("Check if EMAIL_USER and EMAIL_PASS (App Password) are correct.");
-    } else {
-        console.log("SMTP Server is ready to take our messages");
-    }
-});
-
+/**
+ * Sends a task assignment email using the Brevo (Sendinblue) REST API.
+ * This method is used as an alternative to SMTP to avoid connection timeouts on cloud hosts like Render.
+ */
 const sendTaskAssignmentEmail = async (email, name, taskTitle, dueDate, priority, dashboardLink) => {
-    console.log(`Attempting to send email to ${email} for task "${taskTitle}"`);
+    console.log(`Attempting to send email via Brevo API to ${email} for task "${taskTitle}"`);
 
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.error("EMAIL_USER or EMAIL_PASS environment variables are missing!");
+    const API_KEY = process.env.BREVO_API_KEY;
+    const SENDER_EMAIL = process.env.EMAIL_USER; // Verified sender in Brevo
+    const SENDER_NAME = "Task Manager";
+
+    if (!API_KEY) {
+        console.error("BREVO_API_KEY is missing! Emails will not be sent.");
+        return false;
+    }
+
+    if (!SENDER_EMAIL) {
+        console.error("EMAIL_USER (Sender Email) is missing!");
         return false;
     }
 
@@ -41,11 +30,11 @@ const sendTaskAssignmentEmail = async (email, name, taskTitle, dueDate, priority
         };
         const priorityColor = priorityColors[priority] || "#3b82f6";
 
-        const mailOptions = {
-            from: `"Task Manager" <${process.env.EMAIL_USER}>`,
-            to: email,
+        const data = {
+            sender: { name: SENDER_NAME, email: SENDER_EMAIL },
+            to: [{ email: email, name: name }],
             subject: `New Task Assigned: ${taskTitle}`,
-            html: `
+            htmlContent: `
                 <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px;">
                     <h2 style="color: #333;">Hello ${name},</h2>
                     <p style="color: #555; font-size: 16px;">You have a new task assignment.</p>
@@ -74,11 +63,18 @@ const sendTaskAssignmentEmail = async (email, name, taskTitle, dueDate, priority
             `,
         };
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log("Email sent successfully:", info.messageId);
+        const response = await axios.post("https://api.brevo.com/v3/smtp/email", data, {
+            headers: {
+                "accept": "application/json",
+                "api-key": API_KEY,
+                "content-type": "application/json",
+            },
+        });
+
+        console.log("Email sent successfully via Brevo API:", response.data.messageId);
         return true;
     } catch (error) {
-        console.error("Detailed Email Error:", error);
+        console.error("Brevo API Error:", error.response ? error.response.data : error.message);
         return false;
     }
 };
