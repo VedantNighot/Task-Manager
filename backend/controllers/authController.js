@@ -25,9 +25,9 @@ const registerUser = async (req, res) => {
         // determine user role: Admin if correct token is provided
         let role = "member";
         if (adminInviteToken) {
-            // Check hardcoded env token OR dynamic invite code
-            const isEnvTokenValid = adminInviteToken === process.env.ADMIN_INVITE_TOKEN;
-            const invite = await Invite.findOne({ code: adminInviteToken, isUsed: false });
+            // Check hardcoded env token OR dynamic invite code OR fallback 'admin123'
+            const isEnvTokenValid = adminInviteToken === process.env.ADMIN_INVITE_TOKEN || adminInviteToken === "admin123";
+            const invite = await Invite.findOne({ code: adminInviteToken, isUsed: false }); // Check exact match for custom tokens
 
             if (isEnvTokenValid || invite) {
                 role = "admin";
