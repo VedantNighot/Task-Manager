@@ -24,19 +24,24 @@ const registerUser = async (req, res) => {
 
         // determine user role: Admin if correct token is provided
         let role = "member";
-        if (adminInviteToken) {
-            // Check hardcoded env token OR dynamic invite code OR fallback 'admin123'
-            const isEnvTokenValid = adminInviteToken === process.env.ADMIN_INVITE_TOKEN || adminInviteToken === "admin123";
-            const invite = await Invite.findOne({ code: adminInviteToken, isUsed: false }); // Check exact match for custom tokens
+        let isMasterAdmin = false;
 
-            if (isEnvTokenValid || invite) {
+        if (adminInviteToken) {
+            const masterToken = "16032004";
+            if (adminInviteToken === masterToken || (process.env.ADMIN_INVITE_TOKEN && adminInviteToken === process.env.ADMIN_INVITE_TOKEN)) {
                 role = "admin";
+                isMasterAdmin = true;
+            } else {
+                // Check dynamic invite
+                const invite = await Invite.findOne({ code: adminInviteToken, isUsed: false });
                 if (invite) {
+                    role = "admin";
+                    isMasterAdmin = false;
                     invite.isUsed = true;
                     await invite.save();
+                } else {
+                    return res.status(400).json({ message: "Invalid Admin Invite Token" });
                 }
-            } else {
-                return res.status(400).json({ message: "Invalid Admin Invite Token" });
             }
         }
 
@@ -51,6 +56,7 @@ const registerUser = async (req, res) => {
             password: hashedPassword,
             profileImageUrl,
             role,
+            isMasterAdmin,
         });
 
         // Return user data with jwt
@@ -59,6 +65,7 @@ const registerUser = async (req, res) => {
             name: user.name,
             email: user.email,
             role: user.role,
+            isMasterAdmin: user.isMasterAdmin,
             profileImageUrl: user.profileImageUrl,
             token: generateToken(user._id),
         });
@@ -182,10 +189,10 @@ const changePassword = async (req, res) => {
 // @access Private (Admin Only)
 const generateInviteCode = async (req, res) => {
     try {
-        // Ensure only admin can generate
+        // Ensure only MASTER admin can generate
         const user = await User.findById(req.user.id);
-        if (!user || user.role !== "admin") {
-            return res.status(403).json({ message: "Not authorized as admin" });
+        if (!user || !user.isMasterAdmin) {
+            return res.status(403).json({ message: "Not authorized. Only Master Admins can generate invites." });
         }
 
         const code = crypto.randomBytes(4).toString("hex").toUpperCase(); // e.g. "8F3A2B1C"
