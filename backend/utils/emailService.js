@@ -2,14 +2,33 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // true for 465, false for other ports
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
 });
 
+// Verify connection configuration
+transporter.verify(function (error, success) {
+    if (error) {
+        console.error("SMTP Connection Error:", error);
+        console.log("Check if EMAIL_USER and EMAIL_PASS (App Password) are correct.");
+    } else {
+        console.log("SMTP Server is ready to take our messages");
+    }
+});
+
 const sendTaskAssignmentEmail = async (email, name, taskTitle, dueDate, priority, dashboardLink) => {
+    console.log(`Attempting to send email to ${email} for task "${taskTitle}"`);
+
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.error("EMAIL_USER or EMAIL_PASS environment variables are missing!");
+        return false;
+    }
+
     try {
         const priorityColors = {
             High: "#ef4444", // Red
@@ -19,7 +38,7 @@ const sendTaskAssignmentEmail = async (email, name, taskTitle, dueDate, priority
         const priorityColor = priorityColors[priority] || "#3b82f6";
 
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: `"Task Manager" <${process.env.EMAIL_USER}>`,
             to: email,
             subject: `New Task Assigned: ${taskTitle}`,
             html: `
@@ -51,11 +70,11 @@ const sendTaskAssignmentEmail = async (email, name, taskTitle, dueDate, priority
             `,
         };
 
-        await transporter.sendMail(mailOptions);
-        console.log(`Email sent to ${email}`);
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Email sent successfully:", info.messageId);
         return true;
     } catch (error) {
-        console.error("Error sending email:", error);
+        console.error("Detailed Email Error:", error);
         return false;
     }
 };

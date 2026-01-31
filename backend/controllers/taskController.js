@@ -119,12 +119,16 @@ const createTask = async (req, res) => {
 
         // Send Email Notifications
         try {
+            console.log("Creating task for users:", assignedTo);
             const users = await User.find({ _id: { $in: assignedTo } });
+            console.log(`Found ${users.length} users in database for assignment`);
+
             // Use Client URL from env or fallback to deployed URL
             const dashboardLink = `${process.env.CLIENT_URL || "https://task-manager-luy3.onrender.com"}/user/dashboard`;
 
             users.forEach(user => {
                 if (user.email) {
+                    console.log(`Triggering assignment email to: ${user.email}`);
                     sendTaskAssignmentEmail(
                         user.email,
                         user.name,
@@ -133,6 +137,8 @@ const createTask = async (req, res) => {
                         priority,
                         dashboardLink
                     );
+                } else {
+                    console.warn(`User ${user._id} has no email address`);
                 }
             });
         } catch (emailError) {
