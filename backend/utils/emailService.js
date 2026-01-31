@@ -86,6 +86,9 @@ const sendTaskAssignmentEmail = async (email, name, taskId, title, taskDate, due
             `,
         };
 
+        console.log(`Sender Email: ${SENDER_EMAIL}`);
+        console.log(`Recipient Email: ${email}`);
+
         const response = await axios.post("https://api.brevo.com/v3/smtp/email", data, {
             headers: {
                 "accept": "application/json",
@@ -94,10 +97,16 @@ const sendTaskAssignmentEmail = async (email, name, taskId, title, taskDate, due
             },
         });
 
+        console.log("Brevo API Response Data:", response.data);
         console.log("Email sent successfully via Brevo API:", response.data.messageId);
         return true;
     } catch (error) {
-        console.error("Brevo API Error:", error.response ? error.response.data : error.message);
+        console.error("Brevo API Full Error Response:");
+        if (error.response) {
+            console.error(JSON.stringify(error.response.data, null, 2));
+        } else {
+            console.error(error.message);
+        }
         return false;
     }
 };

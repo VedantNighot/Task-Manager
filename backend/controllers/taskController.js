@@ -126,10 +126,10 @@ const createTask = async (req, res) => {
             // Use Client URL from env or fallback to deployed URL
             const dashboardLink = `${process.env.CLIENT_URL || "https://task-manager-luy3.onrender.com"}/user/dashboard`;
 
-            users.forEach(user => {
+            const emailPromises = users.map(user => {
                 if (user.email) {
                     console.log(`Triggering assignment email to: ${user.email}`);
-                    sendTaskAssignmentEmail(
+                    return sendTaskAssignmentEmail(
                         user.email,
                         user.name,
                         task._id,
@@ -138,11 +138,17 @@ const createTask = async (req, res) => {
                         dueDate,
                         priority,
                         dashboardLink
-                    );
+                    ).catch(err => {
+                        console.error(`Individual email failed for ${user.email}:`, err);
+                    });
                 } else {
                     console.warn(`User ${user._id} has no email address`);
+                    return Promise.resolve();
                 }
             });
+
+            await Promise.all(emailPromises);
+            console.log("All email processes completed (success or logged failure)");
         } catch (emailError) {
             console.error("Failed to send assignment emails:", emailError);
             // Don't fail the task creation just because email failed
