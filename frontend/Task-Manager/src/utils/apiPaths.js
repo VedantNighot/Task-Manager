@@ -7,6 +7,7 @@ export const API_PATHS = {
         LOGIN: "/api/auth/login", //Authenticate user & return JWT token
         GET_PROFILE: "/api/auth/profile", //Get logged-in users details
         CHANGE_PASSWORD: "/api/auth/change-password", //Change user password
+        GENERATE_INVITE: "/api/auth/generate-invite", // Generate admin invite code
     },
     USERS: {
         GET_ALL_USERS: "/api/users", //Get all users (Admin only)
