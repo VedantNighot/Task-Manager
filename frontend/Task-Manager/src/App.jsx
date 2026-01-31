@@ -1,11 +1,11 @@
 import React, { useContext } from 'react'
-import{
+import {
   BrowserRouter as Router,
   Routes,
   Route,
   Outlet,
   Navigate,
-}from "react-router-dom";
+} from "react-router-dom";
 import SignUp from './pages/Auth/SignUp';
 import PrivateRoute from './routes/PrivateRoute';
 
@@ -21,42 +21,48 @@ import ViewTaskDetails from './pages/User/ViewTaskDetails';
 import UserProvider, { UserContext } from './context/userContext';
 import Login from './pages/Auth/Login';
 import { Toaster } from 'react-hot-toast';
+import ChangePassword from './pages/Shared/ChangePassword';
+
+
+
 
 const App = () => {
   return (
     <UserProvider>
-    <div>
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          
-          {/* Admin Routes */}
-          <Route element={<PrivateRoute allowedRoles={["admin"]}/>}>
-            <Route path='/admin/dashboard' element={<Dashboard />}/>
-            <Route path='/admin/tasks' element={<ManageTask />}/>
-            <Route path='/admin/create-task' element={<CreateTask />}/>
-            <Route path='/admin/users' element={<ManageUsers />}/>
-          </Route>
+      <div>
+        <Router>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
 
-          {/* User Routes */}
-          <Route element={<PrivateRoute allowedRoles={["user"]}/>}>
+            {/* Admin Routes */}
+            <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+              <Route path='/admin/dashboard' element={<Dashboard />} />
+              <Route path='/admin/tasks' element={<ManageTask />} />
+              <Route path='/admin/create-task' element={<CreateTask />} />
+              <Route path='/admin/users' element={<ManageUsers />} />
+              <Route path='/admin/change-password' element={<ChangePassword />} />
+            </Route>
 
-            <Route path='/user/dashboard' element={<UserDashboard/>}/>
-            <Route path='/user/tasks' element={<MyTask/>}/>
-            <Route path='/user/task-details/:id' element={<ViewTaskDetails />}/>
-          
-          </Route>
+            {/* User Routes */}
+            <Route element={<PrivateRoute allowedRoles={["user"]} />}>
 
-          {/* Default Router */}
-          <Route path='/' element={<Root/>} />
+              <Route path='/user/dashboard' element={<UserDashboard />} />
+              <Route path='/user/tasks' element={<MyTask />} />
+              <Route path='/user/task-details/:id' element={<ViewTaskDetails />} />
+              <Route path='/user/change-password' element={<ChangePassword />} />
 
-        </Routes>
-      </Router>
-    </div> 
-      <Toaster 
+            </Route>
+
+            {/* Default Router */}
+            <Route path='/' element={<Root />} />
+
+          </Routes>
+        </Router>
+      </div>
+      <Toaster
         toastOptions={{
-          className:"",
+          className: "",
           style: {
             fontSize: "13px",
           },
@@ -69,12 +75,12 @@ const App = () => {
 export default App;
 
 const Root = () => {
-  const {user,loading} = useContext(UserContext);
+  const { user, loading } = useContext(UserContext);
 
-  if(loading) return null;
+  if (loading) return null;
 
-  if(!user){
-    return <Navigate to="/login"/>
+  if (!user) {
+    return <Navigate to="/login" />
   }
 
   return user.role === "admin" ? <Navigate to="/admin/dashboard" /> : <Navigate to="/user/dashboard" />;

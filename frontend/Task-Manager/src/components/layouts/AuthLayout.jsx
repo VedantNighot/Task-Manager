@@ -9,10 +9,10 @@ const AuthLayout = ({ children }) => {
         {children}
       </div>
       <div className="hidden md:flex w-[40vw] h-screen items-center justify-center bg-gradient-to-br from-blue-50 via-purple-50 to-blue-50 bg-[url('/bg-img.jpg')] bg-cover bg-no-repeat bg-center overflow-hidden p-8">
-        <div className="relative">
+        <div className="relative flex items-center justify-center">
           <img
             src={UI_IMG}
-            className="w-full max-w-md lg:max-w-lg xl:max-w-xl drop-shadow-2xl transform hover:scale-105 transition-transform duration-300"
+            className="w-[70%] max-w-[400px] drop-shadow-2xl transition-transform duration-300"
             alt="Task Manager Dashboard"
           />
         </div>
