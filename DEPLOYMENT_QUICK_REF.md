@@ -1,35 +1,52 @@
-# 🎯 Quick Deployment Reference
+# 🎯 Vercel Deployment - Quick Start
 
-## Your Deployed URLs
+## 🚀 Deploy Now (2 Options)
 
-### Frontend (GitHub Pages)
-**URL**: https://vedantnighot.github.io/Task-Manager/
+### Option 1: Vercel Dashboard (Easiest)
+1. Go to: **https://vercel.com**
+2. Sign in with GitHub
+3. Click **"Add New Project"**
+4. Import: **VedantNighot/Task-Manager**
+5. Configure:
+   - **Root Directory**: `frontend/Task-Manager`
+   - **Framework**: Vite
+   - **Build Command**: `npm run build`
+   - **Output Directory**: `dist`
+6. Add Environment Variable:
+   - `VITE_API_BASE_URL` = `https://task-manager-luy3.onrender.com`
+7. Click **Deploy** 🎉
 
-### Backend (Render)
-**URL**: https://task-manager-luy3.onrender.com
-
----
-
-## ⚡ Quick Actions
-
-### To enable deployment:
-1. Visit: https://github.com/VedantNighot/Task-Manager/settings/pages
-2. Under "Source", select: **GitHub Actions**
-3. Save
-
-### To check deployment status:
-Visit: https://github.com/VedantNighot/Task-Manager/actions
-
----
-
-## 📋 What Was Configured
-
-✅ Fixed `package.json` deploy script  
-✅ Created GitHub Actions workflow  
-✅ Configured Vite base path for GitHub Pages  
-✅ Connected frontend to backend API  
-✅ Pushed all changes to GitHub  
+### Option 2: Vercel CLI
+```bash
+npm install -g vercel
+vercel login
+cd "c:\Users\vedan\Desktop\projects\Task Manager"
+vercel
+```
 
 ---
 
-**Next Step**: Enable GitHub Pages in your repository settings (see link above)
+## 📍 Your URLs
+
+**Backend (Render)**: https://task-manager-luy3.onrender.com ✅  
+**Frontend (Vercel)**: `https://[your-project].vercel.app` (after deployment)
+
+---
+
+## ✅ What's Ready
+
+- ✅ `vercel.json` configuration created
+- ✅ `vite.config.js` updated for Vercel
+- ✅ Environment variables configured
+- ✅ All changes pushed to GitHub
+- ✅ Ready to deploy!
+
+---
+
+## 📚 Full Guide
+
+See [`VERCEL_DEPLOYMENT.md`](file:///c:/Users/vedan/Desktop/projects/Task%20Manager/VERCEL_DEPLOYMENT.md) for detailed instructions and troubleshooting.
+
+---
+
+**Next Step**: Choose Option 1 or 2 above and deploy! 🚀
