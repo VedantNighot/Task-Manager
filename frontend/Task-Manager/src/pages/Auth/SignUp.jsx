@@ -8,6 +8,7 @@ import axiosInstance from "../../utils/axiosinstance";
 import { API_PATHS } from "../../utils/apiPaths";
 import { UserContext } from "../../context/userContext";
 import uploadImage from "../../utils/uploadImage";
+import toast from "react-hot-toast";
 
 const SignUp = () => {
   const [profilePic, setProfilePic] = useState(null);
@@ -16,7 +17,7 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [adminInviteToken, setAdminInviteToken] = useState("");
 
-  const {updateUser} = useContext(UserContext)
+  const { updateUser } = useContext(UserContext)
   const navigate = useNavigate();
 
   const [error, setError] = useState(null);
@@ -41,38 +42,42 @@ const SignUp = () => {
     }
     setError("");
     // SignUp API call
-    try{
+    try {
       // Upload iage if presesnt 
-      if(profilePic){
+      if (profilePic) {
         const imageUploadRes = await uploadImage(profilePic);
         profileImageUrl = imageUploadRes.imageUrl || "";
       }
-      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER,{
-        name:fullName,
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+        name: fullName,
         email,
         password,
         profileImageUrl,
         adminInviteToken
       });
 
-      const {token , role} = response.data;
+      const { token, role } = response.data;
 
-      if(token){
-        localStorage.setItem("token",token);
+      if (token) {
+        localStorage.setItem("token", token);
         updateUser(response.data);
+        toast.success("Account Created Successfully!");
 
         // Redirect base on role
-        if(role === "admin"){
+        if (role === "admin") {
           navigate("/admin/dashboard");
-        }else{
+        } else {
           navigate("/user/dashboard");
         }
       }
-    }catch(error){
-      if(error.response && error.response.data.message){
+    } catch (error) {
+      console.error("Signup error:", error);
+      if (error.response && error.response.data.message) {
         setError(error.response.data.message);
-      }else{
+        toast.error(error.response.data.message);
+      } else {
         setError("Something went wrong. please try again");
+        toast.error("Something went wrong. please try again");
       }
     }
   };

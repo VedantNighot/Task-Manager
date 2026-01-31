@@ -1,59 +1,64 @@
 import React, { useContext, useState } from 'react'
 import AuthLayout from '../../components/layouts/AuthLayout';
-import {useNavigate,Link} from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import Input from '../../components/inputs/input.jsx';
 import { validateEmail } from '../../utils/helper';
 import axiosInstance from '../../utils/axiosinstance';
 import { API_PATHS } from '../../utils/apiPaths';
 import { UserContext } from '../../context/userContext';
+import toast from 'react-hot-toast';
 
 const Login = () => {
-  const [email,setEmail] = useState("");
-  const [password,setPassword] = useState("");
-  const [error,setError] = useState("");
-  
-  const {updateUser} = useContext(UserContext); 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  const { updateUser } = useContext(UserContext);
   const navigate = useNavigate();
 
 
   // Handle Login Form submit
-  const handleLogin = async(e)=>{
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    if(!validateEmail(email)){
+    if (!validateEmail(email)) {
       setError("please enter a valid email address.");
       return;
     }
-    if(!password){
+    if (!password) {
       setError("please enter the password");
       return;
     }
     setError("");
 
     // Login API call
-    try{
+    try {
       const response = await axiosInstance.post(API_PATHS.AUTH.LOGIN, {
         email,
         password,
       });
-      const {token,role} = response.data;
+      const { token, role } = response.data;
 
-      if(token){
-        localStorage.setItem("token",token);
+      if (token) {
+        localStorage.setItem("token", token);
         updateUser(response.data);
+        toast.success("Login Successful!");
 
         // Redirected based on role 
-        if(role === "admin"){
+        if (role === "admin") {
           navigate("/admin/dashboard");
-        }else{
+        } else {
           navigate("/user/dashboard");
         }
       }
-    }catch(error){
-      if(error.response && error.response.data.message){
+    } catch (error) {
+      console.error("Login error:", error);
+      if (error.response && error.response.data.message) {
         setError(error.response.data.message);
-      }else{
+        toast.error(error.response.data.message);
+      } else {
         setError("Something went wrong. please try again");
+        toast.error("Something went wrong. please try again");
       }
     }
   };
@@ -66,8 +71,8 @@ const Login = () => {
       </p>
 
       <form onSubmit={handleLogin}>
-        <Input value={email} onChange={({target})=>{setEmail(target.value)}} label="Email Address" placeholder = "john@example.com" type="text"></Input>
-        <Input value={password} onChange={({target})=>{setPassword(target.value)}} label="Password" placeholder = "Enter Your Password" type="password"></Input>
+        <Input value={email} onChange={({ target }) => { setEmail(target.value) }} label="Email Address" placeholder="john@example.com" type="text"></Input>
+        <Input value={password} onChange={({ target }) => { setPassword(target.value) }} label="Password" placeholder="Enter Your Password" type="password"></Input>
         {error && <p className="text-red-500 text-xs pb-2.5">{error}</p>}
 
         <button type='submit' className="loginbtn btn-primary">LOGIN</button>

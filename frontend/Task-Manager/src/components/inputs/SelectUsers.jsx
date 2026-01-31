@@ -34,9 +34,8 @@ const SelectUsers = ({ selectedUsers, setSelectedUsers }) => {
     setIsModalOpen(false);
   };
 
-  const selectedUsersAvatars = allUsers
-    .filter((user) => selectedUsers.includes(user._id))
-    .map((user) => user.profileImageUrl);
+  const selectedUserDetails = allUsers
+    .filter((user) => selectedUsers.includes(user._id));
 
   useEffect(() => {
     getAllUsers();
@@ -45,6 +44,8 @@ const SelectUsers = ({ selectedUsers, setSelectedUsers }) => {
   useEffect(() => {
     if (selectedUsers.length === 0) {
       setTempSelectedUsers([]);
+    } else {
+      setTempSelectedUsers(selectedUsers);
     }
     return () => { };
   }, [selectedUsers]);
@@ -62,7 +63,7 @@ const SelectUsers = ({ selectedUsers, setSelectedUsers }) => {
 
   return (
     <div className="space-y-4 mt-2">
-      {selectedUsersAvatars.length === 0 && (
+      {selectedUserDetails.length === 0 && (
         <button
           type="button" // Prevent form submission
           className="flex items-center gap-2 text-sm font-medium text-primary bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-colors border border-blue-200 border-dashed"
@@ -72,9 +73,9 @@ const SelectUsers = ({ selectedUsers, setSelectedUsers }) => {
         </button>
       )}
 
-      {selectedUsersAvatars.length > 0 && (
+      {selectedUserDetails.length > 0 && (
         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setIsModalOpen(true)}>
-          <AvatarGroup avatars={selectedUsersAvatars} maxVisible={4} />
+          <AvatarGroup users={selectedUserDetails} maxVisible={4} />
           <span className="text-xs font-medium text-gray-500 group-hover:text-primary transition-colors">
             + Edit Selection
           </span>
@@ -106,8 +107,8 @@ const SelectUsers = ({ selectedUsers, setSelectedUsers }) => {
                   key={user._id}
                   onClick={() => handleUserClick(user._id)}
                   className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-all border ${isSelected
-                      ? "bg-blue-50 border-blue-200 ring-1 ring-blue-200"
-                      : "bg-white border-gray-100 hover:bg-gray-50 hover:border-gray-200"
+                    ? "bg-blue-50 border-blue-200 ring-1 ring-blue-200"
+                    : "bg-white border-gray-100 hover:bg-gray-50 hover:border-gray-200"
                     }`}
                 >
                   {user.profileImageUrl ? (

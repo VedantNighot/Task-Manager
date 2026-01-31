@@ -39,6 +39,10 @@ const SideMenu = ({ activeMenu }) => {
               src={user?.profileImageUrl}
               alt="Profile Image"
               className="w-20 h-20 bg-slate-400 rounded-full object-cover object-center"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.parentElement.innerHTML = `<div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-primary text-2xl font-bold uppercase">${getInitials(user?.name)}</div>`;
+              }}
             />
           ) : (
             <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center text-primary text-2xl font-bold uppercase">
