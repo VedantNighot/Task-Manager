@@ -1,7 +1,8 @@
 import axios from "axios";
+import toast from "react-hot-toast";
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://task-manager-luy3.onrender.com",
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",
@@ -29,16 +30,21 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Handle common errror globally
+    // Handle common errors globally
     if (error.response) {
       if (error.response.status === 401) {
-        //Redirected  to login Page
-        window.location.href = "/login";
+        // Only redirect to login if not already on login/signup page
+        if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/signup')) {
+          localStorage.removeItem("token");
+          window.location.href = "/login";
+        }
       } else if (error.response.status === 500) {
-        console.log("Server error. Please try again later.");
+        toast.error("Server error. Please try again later.");
       }
     } else if (error.code === "ECONNABORTED") {
-      console.log("Request timeout. Please try agian.");
+      toast.error("Request timeout. Please try again.");
+    } else if (error.message === "Network Error") {
+      toast.error("Network error. Please check your connection.");
     }
     return Promise.reject(error);
   }

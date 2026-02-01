@@ -26,23 +26,23 @@ const UserDashboard = () => {
 
   // Prepare Chart Data
   const prepareChartData = (data) => {
-  const taskDistribution = data?.taskDistribution ?? {};
-  const taskPriorityLevels = data?.taskPriorityLevels ?? {};
+    const taskDistribution = data?.taskDistribution ?? {};
+    const taskPriorityLevels = data?.taskPriorityLevels ?? {};
 
-  const taskDistributionData = [
-    { status: "Pending", count: taskDistribution.Pending || 0 },
-    { status: "In Progress", count: taskDistribution.InProgress || 0 },
-    { status: "Completed", count: taskDistribution.Completed || 0 },
-  ];
-  setPieChartData(taskDistributionData);
+    const taskDistributionData = [
+      { status: "Pending", count: taskDistribution.Pending || 0 },
+      { status: "In Progress", count: taskDistribution.InProgress || 0 },
+      { status: "Completed", count: taskDistribution.Completed || 0 },
+    ];
+    setPieChartData(taskDistributionData);
 
-  const PriorityLevelData = [
-    { priority: "Low", count: taskPriorityLevels.Low || 0 },
-    { priority: "Medium", count: taskPriorityLevels.Medium || 0 },
-    { priority: "High", count: taskPriorityLevels.High || 0 },
-  ];
-  setBarChartData(PriorityLevelData);
-};
+    const PriorityLevelData = [
+      { priority: "Low", count: taskPriorityLevels.Low || 0 },
+      { priority: "Medium", count: taskPriorityLevels.Medium || 0 },
+      { priority: "High", count: taskPriorityLevels.High || 0 },
+    ];
+    setBarChartData(PriorityLevelData);
+  };
 
 
   const getDashboardData = async () => {
@@ -53,10 +53,9 @@ const UserDashboard = () => {
       if (response.data) {
         setDashboardData(response.data);
         prepareChartData(response.data?.charts || null);
-        console.log("DashBoardAPI: ", response.data);
       }
     } catch (error) {
-      console.log("Error in fetching user:", error);
+      // Error is handled by axios interceptor
     }
   };
 
@@ -67,7 +66,7 @@ const UserDashboard = () => {
   useEffect(() => {
     getDashboardData();
 
-    return () => {};
+    return () => { };
   }, []);
 
   return (
@@ -134,8 +133,8 @@ const UserDashboard = () => {
               <h5 className="font-medium">Task Priority Levels</h5>
             </div>
 
-            <CustomBarChart data={barChartData}/>
-            
+            <CustomBarChart data={barChartData} />
+
           </div>
         </div>
 

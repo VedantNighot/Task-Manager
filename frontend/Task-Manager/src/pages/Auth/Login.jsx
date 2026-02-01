@@ -52,7 +52,6 @@ const Login = () => {
         }
       }
     } catch (error) {
-      console.error("Login error:", error);
       if (error.response && error.response.data.message) {
         setError(error.response.data.message);
         toast.error(error.response.data.message);
