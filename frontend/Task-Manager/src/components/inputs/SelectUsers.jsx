@@ -112,11 +112,17 @@ const SelectUsers = ({ selectedUsers, setSelectedUsers }) => {
                     }`}
                 >
                   {user.profileImageUrl ? (
-                    <img
-                      src={user.profileImageUrl}
-                      alt={user.name}
-                      className="w-10 h-10 rounded-full object-cover border border-gray-200"
-                    />
+                    <div className="w-10 h-10 shrink-0">
+                      <img
+                        src={user.profileImageUrl}
+                        alt={user.name}
+                        className="w-full h-full rounded-full object-cover border border-gray-200"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.parentElement.innerHTML = `<div class="w-full h-full rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-bold border border-indigo-200">${user.name?.charAt(0).toUpperCase()}</div>`;
+                        }}
+                      />
+                    </div>
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-sm font-bold border border-indigo-200">
                       {user.name?.charAt(0).toUpperCase()}
