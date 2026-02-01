@@ -1,7 +1,7 @@
 import React from "react";
 import AvatarGroup from "../AvatarGroup";
 
-const UserCard = ({ userInfo }) => {
+const UserCard = ({ userInfo, onDelete }) => {
   return (
     <div className="user-card p-2">
       <div className="flex items-center justify-between">
@@ -26,6 +26,16 @@ const UserCard = ({ userInfo }) => {
             <p className="text-xs text-gray-500">{userInfo?.email}</p>
           </div>
         </div>
+
+
+        {userInfo?.role !== "admin" && (
+          <button
+            onClick={() => onDelete && onDelete(userInfo)}
+            className="text-red-500 hover:text-red-700 font-medium text-xs px-2 py-1 bg-red-50 hover:bg-red-100 rounded transition-colors"
+          >
+            Remove
+          </button>
+        )}
       </div>
 
       <div className="flex items-end gap-3 mt-5">
@@ -45,7 +55,7 @@ const UserCard = ({ userInfo }) => {
           status="Completed"
         />
       </div>
-    </div>
+    </div >
   );
 };
 export default UserCard;

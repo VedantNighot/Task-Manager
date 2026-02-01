@@ -5,45 +5,70 @@ import { API_PATHS } from '../../utils/apiPaths';
 import { LuFileSpreadsheet } from 'react-icons/lu';
 import UserCard from '../../components/Cards/UserCard';
 import toast from 'react-hot-toast';
+import Modal from '../../components/Modal';
+import DeleteAlert from '../../components/DeleteAlert';
 
 const ManageUsers = () => {
-  const [allUsers,setAllUsers] = useState([]);
-  const getAllUsers = async ()=>{
+  const [allUsers, setAllUsers] = useState([]);
+  const [openDeleteAlert, setOpenDeleteAlert] = useState(false);
+  const [userToDelete, setUserToDelete] = useState(null);
+
+  const handleDeleteUser = (user) => {
+    setUserToDelete(user);
+    setOpenDeleteAlert(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
+
+    try {
+      await axiosInstance.delete(API_PATHS.USERS.DELETE_USER(userToDelete._id));
+      toast.success("User removed successfully");
+      setOpenDeleteAlert(false);
+      setUserToDelete(null);
+      getAllUsers(); // Refresh list
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      toast.error(error.response?.data?.message || "Failed to delete user");
+    }
+  };
+
+  const getAllUsers = async () => {
     try {
       const response = await axiosInstance.get(API_PATHS.USERS.GET_ALL_USERS);
-      if(response.data?.length > 0){
+      if (response.data?.length > 0) {
         setAllUsers(response.data);
       }
     } catch (error) {
-        console.error("Error fetching users:",error);
+      console.error("Error fetching users:", error);
     }
   };
 
   // Download Task Report
-  const handleDownloadReport = async ()=> {
+  const handleDownloadReport = async () => {
     try {
-      const response = await axiosInstance.get(API_PATHS.REPORTS.EXPORT_USERS,{
-        responseType:"blob",
+      const response = await axiosInstance.get(API_PATHS.REPORTS.EXPORT_USERS, {
+        responseType: "blob",
       })
       // Create a URL for the blob
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download","user_details.xlsx");
+      link.setAttribute("download", "user_details.xlsx");
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("Error downloading expense details",error);
+      console.error("Error downloading expense details", error);
       toast.error("Failed to download expense details. Please try again.");
     }
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     getAllUsers();
-    return ()=>{};
-  },[])
+    return () => { };
+  }, [])
 
   return <DashboardLayout activeMenu={"Manage User"}>
     <div className="mt-5 mb-10">
@@ -51,18 +76,33 @@ const ManageUsers = () => {
         <h2 className="text-xl md:text-xl font-medium">Team Members</h2>
 
         <button className="flex md:flex download-btn" onClick={handleDownloadReport}>
-          <LuFileSpreadsheet className='text-lg'/>
+          <LuFileSpreadsheet className='text-lg' />
           Download Report
         </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            {allUsers?.map((user)=>(
-                <UserCard key={user._id} userInfo={user}/>
-            ))}
+        {allUsers?.map((user) => (
+          <UserCard
+            key={user._id}
+            userInfo={user}
+            onDelete={handleDeleteUser}
+          />
+        ))}
       </div>
+
+      <Modal
+        isOpen={openDeleteAlert}
+        onClose={() => setOpenDeleteAlert(false)}
+        title="Remove User"
+      >
+        <DeleteAlert
+          content={`Are you sure you want to remove ${userToDelete?.name}? This action cannot be undone.`}
+          onDelete={confirmDeleteUser}
+        />
+      </Modal>
     </div>
   </DashboardLayout>
-} 
+}
 
 export default ManageUsers

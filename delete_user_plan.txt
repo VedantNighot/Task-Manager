@@ -1,0 +1,21 @@
+import axios from 'axios';
+
+const API_URL = 'https://task-manager-luy3.onrender.com/api/auth';
+const ADMIN_EMAIL = "vedantnighot@gmail.com"; // Assuming an admin email exists, or we just try to login as the test user to get ID and delete?
+// actually, I don't have admin access easily without credentials.
+// But I have the login credentials for the test user: email: `test_${Date.now()}@example.com` (from previous run) and password "password123".
+// Wait, the previous run used a dynamic email, so I don't know the EXACT email unless I can see the console output from the *user's* previous run or if I search for it.
+// The user said "a user has been created automatically which is test".
+// Maybe I can just use a backend script? Use the models directly!
+// I am on the user's machine, I have access to the backend code. 
+// BUT, I cannot connect to the production MongoDB directly unless I have the connection string.
+// I can use the existing backend code to write a script that connects to Mongoose and deletes it.
+
+// Let's check backend/index.js or .env to see how it connects.
+// .env is likely NOT fully visible or might use a local mongo URI in dev?
+// But the user is complaining about the LIVE user (on Render/Vercel)? Or local?
+// "test remove it" - likely local if they are seeing it in their list.
+// If it's local, I can use a local script. 
+// If it's remote, I need the MONGO_URI.
+
+// Let's try to find the MONGO_URI from the backend .env file.
