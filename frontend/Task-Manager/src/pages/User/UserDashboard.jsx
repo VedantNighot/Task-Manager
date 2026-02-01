@@ -7,7 +7,7 @@ import axiosInstance from "../../utils/axiosinstance";
 import { API_PATHS } from "../../utils/apiPaths";
 import moment from "moment";
 import InfoCard from "../../components/Cards/InfoCard";
-import { addThousandsSeparator } from "../../utils/helper";
+import { addThousandsSeparator, getGreeting } from "../../utils/helper";
 import { LuArrowRight } from "react-icons/lu";
 import TaskListTable from "../../components/TaskListTable";
 import CustomPieChart from "../../components/Charts/CustomPieChart";
@@ -74,7 +74,7 @@ const UserDashboard = () => {
       <div className="card my-5">
         <div>
           <div className="col-span-3">
-            <h2 className="text-xl md:text-2xl">Good Morning! {user?.name}</h2>
+            <h2 className="text-xl md:text-2xl">{getGreeting()}! {user?.name}</h2>
             <p className="text-xs md:text-[13px] text-gray-400 mt-1.5">
               {moment().format("dddd Do MM YYYY")}
             </p>
