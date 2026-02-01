@@ -217,7 +217,7 @@ const updateTaskStatus = async (req, res) => {
             (userId) => userId.toString() === req.user._id.toString()
         );
 
-        if (isAssigned && req.user.role !== "admin") {
+        if (!isAssigned && req.user.role !== "admin") {
             return res.status(403).json({ message: "Not authorized" });
         }
 
@@ -229,7 +229,13 @@ const updateTaskStatus = async (req, res) => {
         }
 
         await task.save();
-        res.json({ message: " Task Status Updated", task });
+
+        const updatedTask = await Task.findById(req.params.id).populate(
+            "assignedTo",
+            "name email profileImageUrl"
+        );
+
+        res.json({ message: " Task Status Updated", task: updatedTask });
 
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });

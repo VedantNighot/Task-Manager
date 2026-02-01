@@ -6,6 +6,7 @@ import { API_PATHS } from '../../utils/apiPaths';
 import { LuFileSpreadsheet } from 'react-icons/lu';
 import TasksStatusTabs from '../../components/TasksStatusTabs';
 import TaskCard from '../../components/Cards/TaskCard';
+import toast from 'react-hot-toast';
 
 const MyTask = () => {
 
@@ -17,26 +18,26 @@ const MyTask = () => {
   const getAllTasks = async () => {
     try {
       const response = await axiosInstance.get(API_PATHS.TASKS.GET_ALL_TASKS, {
-        params:{
+        params: {
           status: filterStatus === "All" ? "" : filterStatus,
         },
       });
 
-      setAllTasks(response.data?.tasks.length > 0 ? response.data.tasks: []);
+      setAllTasks(response.data?.tasks.length > 0 ? response.data.tasks : []);
 
       // Map status Summary data with fixed label and order 
       const statusSummary = response.data?.statusSummary || {};
 
       const statusArray = [
-        {label:"All",count:statusSummary.all || 0},
-        {label:"Pending", count: statusSummary.pendingTasks || 0},
-        {label:"In Progress", count: statusSummary.inProgressTasks || 0},
-        {label:"Completed", count: statusSummary.completedTasks || 0},
+        { label: "All", count: statusSummary.all || 0 },
+        { label: "Pending", count: statusSummary.pendingTasks || 0 },
+        { label: "In Progress", count: statusSummary.inProgressTasks || 0 },
+        { label: "Completed", count: statusSummary.completedTasks || 0 },
       ];
 
       setTabs(statusArray);
     } catch (error) {
-      console.error("Error Fetching tasks:",error);
+      console.error("Error Fetching tasks:", error);
     }
   };
 
@@ -44,47 +45,65 @@ const MyTask = () => {
     navigate(`/user/task-details/${taskId}`);
   };
 
+  const handleUpdateStatus = async (taskId) => {
+    try {
+      const response = await axiosInstance.put(
+        API_PATHS.TASKS.UPDATE_TASK_STATUS(taskId),
+        { status: "Completed" }
+      );
+
+      if (response.data) {
+        toast.success("Task marked as completed!");
+        getAllTasks();
+      }
+    } catch (error) {
+      console.error("Error updating task status:", error);
+      toast.error("Failed to update task status.");
+    }
+  };
+
   useEffect(() => {
-  getAllTasks();
-}, [filterStatus]);
+    getAllTasks();
+  }, [filterStatus]);
 
 
   return <DashboardLayout activeMenu="My Tasks">
     <div className="my-5">
       <div className="flex flex-col lg:flex-row lg:items-center justify-between">
-          <h2 className="text-xl md:text-xl font-medium ">My Tasks</h2>
+        <h2 className="text-xl md:text-xl font-medium ">My Tasks</h2>
 
         {tabs.length > 0 && (
-    <TasksStatusTabs
-      tabs={tabs}
-      activeTab={filterStatus}
-      setActiveTab={setFilterStatus}
-    />
-)}
+          <TasksStatusTabs
+            tabs={tabs}
+            activeTab={filterStatus}
+            setActiveTab={setFilterStatus}
+          />
+        )}
 
       </div>
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-        {allTasks?.map((item,index)=>(
-          <TaskCard
-            key={item._id}
-            title = {item.title}
-            description = {item.description}
-            priority = {item.priority}
-            status = {item.status}
-            progress = {item.progress}
-            createdAt = {item.createdAt}
-            dueDate = {item.dueDate}
-            assignedTo = {item.assignedTo?.map((item)=>item.profileImageUrl)}
-            attachmentCount = {item.attachments?.length || 0}
-            completedTodoCount={item.completedTodoCount || 0}
-            todoChecklist = {item.todoChecklist || []}
-            onClick = {()=>{
-              handleClick(item._id);
-            }}
-          />
-        ))}
+      {allTasks?.map((item, index) => (
+        <TaskCard
+          key={item._id}
+          title={item.title}
+          description={item.description}
+          priority={item.priority}
+          status={item.status}
+          progress={item.progress}
+          createdAt={item.createdAt}
+          dueDate={item.dueDate}
+          assignedTo={item.assignedTo?.map((item) => item.profileImageUrl)}
+          attachmentCount={item.attachments?.length || 0}
+          completedTodoCount={item.completedTodoCount || 0}
+          todoChecklist={item.todoChecklist || []}
+          onUpdateStatus={() => handleUpdateStatus(item._id)}
+          onClick={() => {
+            handleClick(item._id);
+          }}
+        />
+      ))}
     </div>
   </DashboardLayout>
 }

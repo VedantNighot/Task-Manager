@@ -6,6 +6,7 @@ import DashboardLayout from "../../components/layouts/DashboardLayout";
 import moment from "moment";
 import AvatarGroup from "../../components/AvatarGroup";
 import { LuSquareArrowOutUpRight } from "react-icons/lu";
+import toast from "react-hot-toast";
 
 const ViewTaskDetails = () => {
   const { id } = useParams();
@@ -38,31 +39,51 @@ const ViewTaskDetails = () => {
   };
 
   // Handle  todo Check
-const updateTodoChecklist = async (index) => {
-  const updatedChecklist = task.todoChecklist.map((item, i) =>
-    i === index ? { ...item, completed: !item.completed } : item
-  );
-  setTask({ ...task, todoChecklist: updatedChecklist });
-
-  try {
-    const response = await axiosInstance.put(
-      API_PATHS.TASKS.UPDATE_TODO_CHECKLIST(id),
-      { todoChecklist: updatedChecklist }
+  const updateTodoChecklist = async (index) => {
+    const updatedChecklist = task.todoChecklist.map((item, i) =>
+      i === index ? { ...item, completed: !item.completed } : item
     );
+    setTask({ ...task, todoChecklist: updatedChecklist });
 
-    if (response.data?.task) {
-      setTask(response.data.task); // sync from backend
+    try {
+      const response = await axiosInstance.put(
+        API_PATHS.TASKS.UPDATE_TODO_CHECKLIST(id),
+        { todoChecklist: updatedChecklist }
+      );
+
+      if (response.data?.task) {
+        setTask(response.data.task); // sync from backend
+        if (response.data.task.status === "Completed") {
+          toast.success("Task completed!");
+        }
+      }
+    } catch (error) {
+      console.error("Checklist update failed", error);
+      setTask(task);
     }
-  } catch (error) {
-    console.error("Checklist update failed", error);
-    setTask(task);
-  }
-};
+  };
+
+  const handleUpdateStatus = async () => {
+    try {
+      const response = await axiosInstance.put(
+        API_PATHS.TASKS.UPDATE_TASK_STATUS(id),
+        { status: "Completed" }
+      );
+
+      if (response.data?.task) {
+        setTask(response.data.task);
+        toast.success("Task marked as completed!");
+      }
+    } catch (error) {
+      console.error("Error updating task status:", error);
+      toast.error("Failed to update task status.");
+    }
+  };
 
 
   const handleLinkClick = (link) => {
-    if(!/^https?:\/\//i.test(link)){
-      link = "https://"+link; //Default to https
+    if (!/^https?:\/\//i.test(link)) {
+      link = "https://" + link; //Default to https
     }
     window.open(link, "_blank");
   };
@@ -71,7 +92,7 @@ const updateTodoChecklist = async (index) => {
     if (id) {
       getTaskDetailsById();
     }
-    return () => {};
+    return () => { };
   }, [id]);
 
   return (
@@ -85,12 +106,22 @@ const updateTodoChecklist = async (index) => {
                   {task?.title}
                 </h2>
 
-                <div
-                  className={`text-[11px] md:text-[13px] font-medium ${getStatusTagColor(
-                    task?.status
-                  )} px-4 py-0.5 rounded`}
-                >
-                  {task?.status}
+                <div className="flex items-center gap-2">
+                  {task?.status !== "Completed" && (
+                    <button
+                      className="text-[12px] text-primary font-medium hover:underline"
+                      onClick={handleUpdateStatus}
+                    >
+                      Mark as Complete
+                    </button>
+                  )}
+                  <div
+                    className={`text-[11px] md:text-[13px] font-medium ${getStatusTagColor(
+                      task?.status
+                    )} px-4 py-0.5 rounded`}
+                  >
+                    {task?.status}
+                  </div>
                 </div>
               </div>
               <div className="mt-4">
@@ -190,9 +221,8 @@ const TodoCheckList = ({ text, isChecked, onChange }) => {
       />
 
       <p
-        className={`text-[13px] ${
-          isChecked ? "line-through text-gray-400" : "text-gray-800"
-        }`}
+        className={`text-[13px] ${isChecked ? "line-through text-gray-400" : "text-gray-800"
+          }`}
       >
         {text}
       </p>
@@ -200,19 +230,19 @@ const TodoCheckList = ({ text, isChecked, onChange }) => {
   );
 };
 
-const Attachments = ({link, index, onClick}) => {
+const Attachments = ({ link, index, onClick }) => {
   return <div className="flex justify-between bg-gray-50 border border-gray-100 px-3 py-2 rounded-md mb-3 mt-2 cursor-pointer"
-  onClick={onClick}
+    onClick={onClick}
   >
     <div className="flex-1 flex items-center gap-3">
       <span className="text-xs text-gray-400 font-semibold">
-        {index < 9 ? `0${index+1}`:index+1}
+        {index < 9 ? `0${index + 1}` : index + 1}
       </span>
 
       <p className="text-xs text-black">{link}</p>
     </div>
 
-    <LuSquareArrowOutUpRight className="text-gray-300"/>
+    <LuSquareArrowOutUpRight className="text-gray-300" />
 
   </div>
 };
