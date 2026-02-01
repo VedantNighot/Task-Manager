@@ -18,7 +18,7 @@ const inviteSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now,
-        expires: 86400, // Expires in 24 hours
+        expires: 300, // Expires in 5 minutes
     },
 });
 

@@ -34,13 +34,20 @@ const registerUser = async (req, res) => {
             } else {
                 // Check dynamic invite
                 const invite = await Invite.findOne({ code: adminInviteToken, isUsed: false });
+
                 if (invite) {
+                    // Explicitly check for 5-minute expiration
+                    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+                    if (invite.createdAt < fiveMinutesAgo) {
+                        return res.status(400).json({ message: "Invite code has expired" });
+                    }
+
                     role = "admin";
                     isMasterAdmin = false;
                     invite.isUsed = true;
                     await invite.save();
                 } else {
-                    return res.status(400).json({ message: "Invalid Admin Invite Token" });
+                    return res.status(400).json({ message: "Invalid or already used Admin Invite Token" });
                 }
             }
         }
