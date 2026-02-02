@@ -163,14 +163,16 @@ const ViewTaskDetails = () => {
                   Todo CheckList
                 </label>
 
-                {task?.todoChecklist?.map((item, index) => (
-                  <TodoCheckList
-                    key={`todo_${index}`}
-                    text={item.text}
-                    isChecked={item?.completed}
-                    onChange={() => updateTodoChecklist(index)}
-                  />
-                ))}
+                <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+                  {task?.todoChecklist?.map((item, index) => (
+                    <TodoCheckList
+                      key={`todo_${index}`}
+                      text={item.text}
+                      isChecked={item?.completed}
+                      onChange={() => updateTodoChecklist(index)}
+                    />
+                  ))}
+                </div>
               </div>
 
               {task?.attachments?.length > 0 && (

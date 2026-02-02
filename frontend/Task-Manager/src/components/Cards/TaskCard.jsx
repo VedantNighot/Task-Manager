@@ -56,7 +56,7 @@ const TaskCard = ({
             className={`px-4 border-l-[3px] ${status === "In Progress"
                 ? "border-cyan-500"
                 : status === "Completed"
-                    ? "border-indigo-500"
+                    ? "border-lime-500"
                     : "border-violet-500"
                 }`}
         >
