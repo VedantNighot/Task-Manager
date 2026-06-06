@@ -440,17 +440,18 @@ const getUserDashboardData = async (req, res) => {
     }
 };
 
-// @desc Handle Chatbot Conversation using backend Gemini Key
+// @desc Handle Chatbot Conversation using backend Gemini or OpenAI Key
 // @route POST /api/tasks/chat
 // @access Private
 const handleChat = async (req, res) => {
     try {
         const { message, history } = req.body;
-        const apiKey = process.env.GEMINI_API_KEY;
+        const geminiKey = process.env.GEMINI_API_KEY;
+        const openaiKey = process.env.OPENAI_API_KEY;
 
-        if (!apiKey) {
+        if (!geminiKey && !openaiKey) {
             return res.status(500).json({
-                message: "Gemini API Key is not configured on the backend server."
+                message: "No AI API Keys (OpenAI or Gemini) are configured on the backend server."
             });
         }
 
@@ -495,58 +496,103 @@ Instructions:
 5. If they ask you to write a plan or steps for a task, break it down clearly.
 6. The current date and time is ${new Date().toLocaleString()}.`;
 
-        const recentHistory = history
-            ?.slice(-8)
-            .filter((m) => m.id !== "welcome")
-            .map((m) => ({
-                role: m.sender === "user" ? "user" : "model",
-                parts: [{ text: m.text }],
-            })) || [];
+        let answer = "";
 
-        const contents = [
-            ...recentHistory,
-            {
-                role: "user",
-                parts: [{ text: message }],
-            },
-        ];
+        if (openaiKey) {
+            // Use OpenAI Completions API
+            const openaiMessages = [
+                { role: "system", content: systemInstruction }
+            ];
 
-        const response = await axios.post(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-            {
-                contents: contents,
-                systemInstruction: {
-                    parts: [{ text: systemInstruction }],
-                },
-                generationConfig: {
-                    temperature: 0.7,
-                    maxOutputTokens: 800,
-                },
-            },
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                },
+            if (history) {
+                history
+                    .filter((m) => m.id !== "welcome")
+                    .forEach((m) => {
+                        openaiMessages.push({
+                            role: m.sender === "user" ? "user" : "assistant",
+                            content: m.text
+                        });
+                    });
             }
-        );
 
-        const answer = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            openaiMessages.push({
+                role: "user",
+                content: message
+            });
+
+            const response = await axios.post(
+                "https://api.openai.com/v1/chat/completions",
+                {
+                    model: "gpt-4o-mini",
+                    messages: openaiMessages,
+                    temperature: 0.7,
+                    max_tokens: 800
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${openaiKey}`
+                    }
+                }
+            );
+
+            answer = response.data?.choices?.[0]?.message?.content;
+        } else {
+            // Fall back to Gemini API
+            const recentHistory = history
+                ?.slice(-8)
+                .filter((m) => m.id !== "welcome")
+                .map((m) => ({
+                    role: m.sender === "user" ? "user" : "model",
+                    parts: [{ text: m.text }],
+                })) || [];
+
+            const contents = [
+                ...recentHistory,
+                {
+                    role: "user",
+                    parts: [{ text: message }],
+                },
+            ];
+
+            const response = await axios.post(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+                {
+                    contents: contents,
+                    systemInstruction: {
+                        parts: [{ text: systemInstruction }],
+                    },
+                    generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 800,
+                    },
+                },
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            answer = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        }
+
         if (!answer) {
             return res.status(500).json({ message: "Failed to generate AI response." });
         }
 
         res.json({ reply: answer });
     } catch (error) {
-        console.error("Gemini API backend error:", error.response?.data || error.message);
+        console.error("AI API backend error:", error.response?.data || error.message);
         res.status(500).json({
-            message: "Error communicating with Gemini API",
+            message: "Error communicating with AI API",
             error: error.response?.data?.error?.message || error.message,
         });
     }
 };
 
 const getChatStatus = async (req, res) => {
-    res.json({ enabled: !!process.env.GEMINI_API_KEY });
+    res.json({ enabled: !!process.env.GEMINI_API_KEY || !!process.env.OPENAI_API_KEY });
 };
 
 module.exports = {
