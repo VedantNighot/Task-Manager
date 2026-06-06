@@ -9,7 +9,9 @@ const {
     updateTaskStatus,
     updateTaskChecklist,
     getDashboardData,
-    getUserDashboardData,} = require("../controllers/taskController");
+    getUserDashboardData,
+    handleChat,
+    getChatStatus,} = require("../controllers/taskController");
 
 const router = express.Router();
 
@@ -19,6 +21,8 @@ router.get("/dashboard-data", protect,getDashboardData);
 router.get("/user-dashboard-data",protect,getUserDashboardData);
 
 router.get("/",protect,getTasks); // Get All Tasks
+router.post("/chat", protect, handleChat); // chatbot assistant (authenticated)
+router.get("/chat-status", protect, getChatStatus); // check if Gemini key is set on server
 router.get("/:id",protect,getTaskById); // Get Tasks By Id
 router.post("/",protect,adminOnly,createTask); // create a task (Admin Only)
 router.put("/:id",protect,updateTask);//Update tasks details

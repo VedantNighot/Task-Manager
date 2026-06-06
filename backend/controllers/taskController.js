@@ -1,6 +1,7 @@
 const Task = require("../models/Task");
 const User = require("../models/User");
 const { sendTaskAssignmentEmail } = require("../utils/emailService");
+const axios = require("axios");
 
 //@desc Get all task (Admin: all User:only assigned tasks)
 // @route GET /api/tasks/
@@ -439,6 +440,115 @@ const getUserDashboardData = async (req, res) => {
     }
 };
 
+// @desc Handle Chatbot Conversation using backend Gemini Key
+// @route POST /api/tasks/chat
+// @access Private
+const handleChat = async (req, res) => {
+    try {
+        const { message, history } = req.body;
+        const apiKey = process.env.GEMINI_API_KEY;
+
+        if (!apiKey) {
+            return res.status(500).json({
+                message: "Gemini API Key is not configured on the backend server."
+            });
+        }
+
+        // Fetch user's tasks to feed as context
+        const userId = req.user._id;
+        let tasks;
+        if (req.user.role === "admin") {
+            tasks = await Task.find({}).populate("assignedTo", "name email");
+        } else {
+            tasks = await Task.find({ assignedTo: userId }).populate("assignedTo", "name email");
+        }
+
+        const simplifiedTasks = tasks.map((t) => ({
+            title: t.title,
+            description: t.description || "",
+            status: t.status,
+            priority: t.priority,
+            progress: t.progress || 0,
+            dueDate: t.dueDate ? new Date(t.dueDate).toLocaleDateString() : "No due date",
+            todos: t.todoChecklist?.map((todo) => ({
+                text: todo.text,
+                completed: todo.completed,
+            })) || [],
+        }));
+
+        const systemInstruction = `You are "Tasky", a friendly, proactive, and highly intelligent AI Task Assistant built into this Task Manager application.
+Your goal is to help the user manage their tasks, stay organized, and answer questions.
+
+User Profile:
+- Name: ${req.user.name || "User"}
+- Email: ${req.user.email || ""}
+- Role: ${req.user.role || "Member"}
+
+Current Tasks in System:
+${JSON.stringify(simplifiedTasks, null, 2)}
+
+Instructions:
+1. Speak in a helpful, encouraging, and professional tone.
+2. Answer questions based on the tasks provided. If there are no tasks, encourage them to create one.
+3. Be concise and use clean Markdown formatting (bullet points, bold text).
+4. If they ask to create a task, offer suggestions for a title, description, priority, and due date.
+5. If they ask you to write a plan or steps for a task, break it down clearly.
+6. The current date and time is ${new Date().toLocaleString()}.`;
+
+        const recentHistory = history
+            ?.slice(-8)
+            .filter((m) => m.id !== "welcome")
+            .map((m) => ({
+                role: m.sender === "user" ? "user" : "model",
+                parts: [{ text: m.text }],
+            })) || [];
+
+        const contents = [
+            ...recentHistory,
+            {
+                role: "user",
+                parts: [{ text: message }],
+            },
+        ];
+
+        const response = await axios.post(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+            {
+                contents: contents,
+                systemInstruction: {
+                    parts: [{ text: systemInstruction }],
+                },
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 800,
+                },
+            },
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            }
+        );
+
+        const answer = response.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!answer) {
+            return res.status(500).json({ message: "Failed to generate AI response." });
+        }
+
+        res.json({ reply: answer });
+    } catch (error) {
+        console.error("Gemini API backend error:", error.response?.data || error.message);
+        res.status(500).json({
+            message: "Error communicating with Gemini API",
+            error: error.response?.data?.error?.message || error.message,
+        });
+    }
+};
+
+const getChatStatus = async (req, res) => {
+    res.json({ enabled: !!process.env.GEMINI_API_KEY });
+};
+
 module.exports = {
     getTasks,
     getTaskById,
@@ -449,4 +559,6 @@ module.exports = {
     updateTaskChecklist,
     getDashboardData,
     getUserDashboardData,
+    handleChat,
+    getChatStatus,
 };
