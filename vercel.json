@@ -23,16 +23,11 @@
       "dest": "/api/index.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "frontend/Task-Manager/$1",
-      "continue": true
-    },
-    {
       "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/Task-Manager/index.html"
+      "dest": "/index.html"
     }
   ]
 }
