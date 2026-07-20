@@ -49,10 +49,19 @@ const ViewTaskDetails = () => {
     setTask({ ...task, todoChecklist: updatedChecklist });
   };
 
-  // Convert uploaded files to base64
+  // Convert uploaded files to base64 (restricted to Image and PDF files)
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    files.forEach(file => {
+    
+    const validFiles = files.filter(file => {
+      const isValid = file.type.startsWith("image/") || file.type === "application/pdf";
+      if (!isValid) {
+        toast.error(`"${file.name}" is not supported. Only images and PDFs are allowed!`);
+      }
+      return isValid;
+    });
+
+    validFiles.forEach(file => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setNewAttachments(prev => [...prev, { name: file.name, data: reader.result }]);
@@ -100,7 +109,40 @@ const ViewTaskDetails = () => {
     }
   };
 
-  const handleLinkClick = (link) => {
+  const handleView = (link) => {
+    if (link.includes('|')) {
+      const [name, dataUrl] = link.split('|');
+      try {
+        const mimeType = dataUrl.split(';')[0].split(':')[1];
+        const base64Data = dataUrl.split(',')[1];
+        
+        // Convert to Blob
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: mimeType });
+        const blobUrl = URL.createObjectURL(blob);
+        
+        window.open(blobUrl, '_blank');
+      } catch (e) {
+        console.error("Blob view error:", e);
+        // Fallback: iframe view
+        const newTab = window.open();
+        newTab.document.write(`<iframe src="${dataUrl}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+      }
+    } else {
+      let actualLink = link;
+      if (!/^https?:\/\//i.test(actualLink)) {
+        actualLink = "https://" + actualLink;
+      }
+      window.open(actualLink, "_blank");
+    }
+  };
+
+  const handleDownload = (link) => {
     if (link.includes('|')) {
       const [name, dataUrl] = link.split('|');
       const downloadLink = document.createElement("a");
@@ -110,10 +152,17 @@ const ViewTaskDetails = () => {
       downloadLink.click();
       document.body.removeChild(downloadLink);
     } else {
-      if (!/^https?:\/\//i.test(link)) {
-        link = "https://" + link;
+      let actualLink = link;
+      if (!/^https?:\/\//i.test(actualLink)) {
+        actualLink = "https://" + actualLink;
       }
-      window.open(link, "_blank");
+      const downloadLink = document.createElement("a");
+      downloadLink.href = actualLink;
+      downloadLink.target = "_blank";
+      downloadLink.download = "";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
     }
   };
 
@@ -209,7 +258,8 @@ const ViewTaskDetails = () => {
                       key={`link_${index}`}
                       link={link}
                       index={index}
-                      onClick={() => handleLinkClick(link)}
+                      onView={() => handleView(link)}
+                      onDownload={() => handleDownload(link)}
                     />
                   ))}
                 </div>
@@ -225,6 +275,7 @@ const ViewTaskDetails = () => {
                     <input
                       type="file"
                       multiple
+                      accept="image/*,application/pdf"
                       onChange={handleFileChange}
                       disabled={isOverdue}
                       className="block w-full text-xs text-slate-500 mt-2
@@ -312,20 +363,32 @@ const TodoCheckList = ({ text, isChecked, onChange, disabled }) => {
   );
 };
 
-const Attachments = ({ link, index, onClick }) => {
+const Attachments = ({ link, index, onView, onDownload }) => {
   const displayName = link.includes('|') ? link.split('|')[0] : link;
   return (
-    <div 
-      className="flex justify-between bg-gray-50 border border-gray-100 px-3 py-2 rounded-md mb-3 mt-2 cursor-pointer hover:bg-gray-100 transition-colors"
-      onClick={onClick}
-    >
+    <div className="flex justify-between items-center bg-gray-50 border border-gray-100 px-3 py-2 rounded-md mb-3 mt-2">
       <div className="flex-1 flex items-center gap-3 overflow-hidden">
-        <span className="text-xs text-gray-400 font-semibold">
+        <span className="text-xs text-gray-400 font-semibold shrink-0">
           {index < 9 ? `0${index + 1}` : index + 1}
         </span>
-        <p className="text-xs text-black line-clamp-1 break-all hover:underline">{displayName}</p>
+        <p className="text-xs text-black line-clamp-1 break-all">{displayName}</p>
       </div>
-      <LuSquareArrowOutUpRight className="text-gray-300" />
+      
+      <div className="flex items-center gap-3 shrink-0 ml-4">
+        <button 
+          onClick={onView}
+          className="text-xs font-semibold text-primary hover:underline cursor-pointer"
+        >
+          View
+        </button>
+        <span className="text-gray-300 text-xs">|</span>
+        <button 
+          onClick={onDownload}
+          className="text-xs font-semibold text-slate-600 hover:underline cursor-pointer"
+        >
+          Download
+        </button>
+      </div>
     </div>
   );
 };
