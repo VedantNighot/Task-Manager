@@ -41,6 +41,9 @@ const Login = () => {
 
       if (token) {
         localStorage.setItem("token", token);
+        if (typeof window.initPushNotifications === "function") {
+          window.initPushNotifications();
+        }
         updateUser(response.data);
         toast.success("Login Successful!");
 

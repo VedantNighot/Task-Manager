@@ -27,6 +27,7 @@ const CreateTask = () => {
     assignedTo: [],
     todoChecklist: [],
     attachments: [],
+    notificationTime: "",
   });
 
   const [currentTask, setCurrentTask] = useState(null);
@@ -47,6 +48,7 @@ const CreateTask = () => {
       assignedTo: [],
       todoChecklist: [],
       attachments: [],
+      notificationTime: "",
     });
   };
   // Create Task
@@ -159,7 +161,8 @@ const CreateTask = () => {
           assignedTo:taskInfo?.assignedTo?.map((item)=>item?._id) || [],
           todoChecklist:
             taskInfo?.todoChecklist?.map((item)=>item?.text) || [],
-            attachments:taskInfo?.attachments || [],
+          attachments:taskInfo?.attachments || [],
+          notificationTime: taskInfo.notificationTime || "",
         }));
       }
     } catch (error) {
@@ -238,7 +241,7 @@ const CreateTask = () => {
             </div>
 
             <div className="grid grid-cols-12 gap-4 mt-2">
-              <div className="col-span-6 md:col-span-4">
+              <div className="col-span-6 md:col-span-3">
                 <label className="text-xs font-medium text-slate-600">
                   Priority
                 </label>
@@ -251,7 +254,7 @@ const CreateTask = () => {
                 />
               </div>
 
-              <div className="col-span-6 md:col-span-4">
+              <div className="col-span-6 md:col-span-3">
                 <label className="text-xs font-medium text-slate-600">
                   Due Date
                 </label>
@@ -267,7 +270,7 @@ const CreateTask = () => {
                 />
               </div>
 
-              <div className="col-span-12 md:col-span-3">
+              <div className="col-span-6 md:col-span-3">
                 <label className="text-xs font-medium text-slate-600">
                   Assign To
                 </label>
@@ -277,6 +280,22 @@ const CreateTask = () => {
                   setSelectedUsers={(value) => {
                     handleValueChange("assignedTo", value);
                   }}
+                />
+              </div>
+
+              <div className="col-span-6 md:col-span-3">
+                <label className="text-xs font-medium text-slate-600">
+                  Daily Reminder Time
+                </label>
+
+                <input
+                  placeholder="Set reminder time"
+                  className="form-input"
+                  value={taskData.notificationTime || ""}
+                  onChange={({ target }) =>
+                    handleValueChange("notificationTime", target.value)
+                  }
+                  type="time"
                 />
               </div>
             </div>

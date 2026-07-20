@@ -101,6 +101,7 @@ const createTask = async (req, res) => {
             assignedTo,
             attachments,
             todoChecklist,
+            notificationTime,
         } = req.body;
 
         if (!Array.isArray(assignedTo)) {
@@ -116,6 +117,7 @@ const createTask = async (req, res) => {
             createdBy: req.user._id,
             todoChecklist,
             attachments,
+            notificationTime,
         });
 
         // Send Email Notifications
@@ -175,6 +177,7 @@ const updateTask = async (req, res) => {
         task.dueDate = req.body.dueDate || task.dueDate;
         task.todoChecklist = req.body.todoChecklist || task.todoChecklist;
         task.attachments = req.body.attachments || task.attachments;
+        task.notificationTime = req.body.notificationTime !== undefined ? req.body.notificationTime : task.notificationTime;
 
         if (req.body.assignedTo) {
             if (!Array.isArray(req.body.assignedTo)) {
@@ -440,6 +443,63 @@ const getUserDashboardData = async (req, res) => {
     }
 };
 
+// @desc Submit completed task with checklist & new attachments
+// @route PUT /api/tasks/:id/submit
+// @access Private
+const submitTask = async (req, res) => {
+    try {
+        const { todoChecklist, newAttachments } = req.body;
+        const task = await Task.findById(req.params.id);
+        if (!task) return res.status(404).json({ message: "Task not found" });
+
+        const isAssigned = task.assignedTo.some(
+            (userId) => userId.toString() === req.user._id.toString()
+        );
+
+        if (!isAssigned && req.user.role !== "admin") {
+            return res.status(403).json({ message: "Not authorized to submit this task" });
+        }
+
+        // Validate due date: if due date has passed, disable submission
+        const today = new Date();
+        const dueDate = new Date(task.dueDate);
+        
+        // Reset hours/minutes/seconds to compare dates purely
+        today.setHours(0,0,0,0);
+        dueDate.setHours(0,0,0,0);
+
+        if (today > dueDate) {
+            return res.status(400).json({ message: "Cannot submit task. Due date has passed." });
+        }
+
+        if (Array.isArray(todoChecklist)) {
+            task.todoChecklist = todoChecklist;
+        }
+
+        if (Array.isArray(newAttachments)) {
+            task.attachments = [...task.attachments, ...newAttachments];
+        }
+
+        // Mark task as Completed and set checklist progress
+        task.status = "Completed";
+        task.todoChecklist.forEach((item) => (item.completed = true));
+        task.progress = 100;
+
+        await task.save();
+
+        const updatedTask = await Task.findById(req.params.id).populate(
+            "assignedTo",
+            "name email profileImageUrl"
+        );
+
+        res.json({ message: "Task submitted successfully!", task: updatedTask });
+    } catch (error) {
+        console.error("🔥 submitTask ERROR:", error);
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+
 module.exports = {
     getTasks,
     getTaskById,
@@ -448,6 +508,7 @@ module.exports = {
     deleteTask,
     updateTaskStatus,
     updateTaskChecklist,
+    submitTask,
     getDashboardData,
     getUserDashboardData,
 };

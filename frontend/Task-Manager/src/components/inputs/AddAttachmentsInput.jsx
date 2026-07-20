@@ -18,27 +18,51 @@ const AddAttachmentsInput = ({ attachments, setAttachments }) => {
         const updateArr = attachments.filter((_, idx) => idx !== index);
         setAttachments(updateArr);
     }
+    const handleAttachmentClick = (item) => {
+        if (item.includes('|')) {
+            const [name, dataUrl] = item.split('|');
+            const link = document.createElement("a");
+            link.href = dataUrl;
+            link.download = name;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else {
+            let link = item;
+            if (!/^https?:\/\//i.test(link)) {
+                link = "https://" + link;
+            }
+            window.open(link, "_blank");
+        }
+    };
+
     return (
         <div>
-            {attachments.map((item, index) => (
-                <div
-                    key={index}
-                    className="flex justify-between bg-gray-50 border border-gray-100 px-3 py-2 rounded-md mb-3 mt-2"
-                >
-                    <div className="flex-1 flex items-center gap-2 overflow-hidden">
-                        <LuPaperclip className="text-gray-400 shrink-0 text-lg" />
-                        <p className="text-sm text-black line-clamp-1 break-all">{item}</p>
-                    </div>
-
-                    <button className="cursor-pointer"
-                        onClick={() => {
-                            handleDeleteOption(index);
-                        }}
+            {attachments.map((item, index) => {
+                const displayName = item.includes('|') ? item.split('|')[0] : item;
+                return (
+                    <div
+                        key={index}
+                        className="flex justify-between bg-gray-50 border border-gray-100 px-3 py-2 rounded-md mb-3 mt-2"
                     >
-                        <HiOutlineTrash className="text-lg text-red-500" />
-                    </button>
-                </div>
-            ))}
+                        <div 
+                            className="flex-1 flex items-center gap-2 overflow-hidden cursor-pointer hover:text-primary"
+                            onClick={() => handleAttachmentClick(item)}
+                        >
+                            <LuPaperclip className="text-gray-400 shrink-0 text-lg" />
+                            <p className="text-sm text-black line-clamp-1 break-all hover:underline">{displayName}</p>
+                        </div>
+
+                        <button className="cursor-pointer"
+                            onClick={() => {
+                                handleDeleteOption(index);
+                            }}
+                        >
+                            <HiOutlineTrash className="text-lg text-red-500" />
+                        </button>
+                    </div>
+                );
+            })}
             <div className="flex items-center gap-5 mt-4">
                 <div className="flex-1 flex items-center gap-3 border border-gray-100 rounded-md px-3">
                     <LuPaperclip className='text-gray-400' />

@@ -8,6 +8,8 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const reportRoutes = require("./routes/reportRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const { sendDailyReminders } = require("./controllers/notificationController");
 
 const app = express();
 // Middleware to handle CORS
@@ -31,6 +33,7 @@ app.use("/api/auth",authRoutes);
 app.use("/api/users",userRoutes);
 app.use("/api/tasks",taskRoutes);
 app.use("/api/reports",reportRoutes);
+app.use("/api/notifications",notificationRoutes);
 
 // Server uploads.json
 app.use("/uploads",express.static(path.join(__dirname,"uploads")));
@@ -40,7 +43,13 @@ app.use("/uploads",express.static(path.join(__dirname,"uploads")));
 // Start Server (only if not running as a Vercel serverless function)
 if (!process.env.VERCEL) {
     const PORT = process.env.PORT || 5000;
-    app.listen(PORT,()=>console.log(`Server running on port ${PORT}`));
+    app.listen(PORT,()=>{
+        console.log(`Server running on port ${PORT}`);
+        // Run daily checks every minute in local dev mode
+        setInterval(() => {
+            sendDailyReminders().catch(err => console.error("Cron scheduler error:", err.message));
+        }, 60000);
+    });
 }
 
 module.exports = app;

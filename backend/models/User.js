@@ -8,6 +8,16 @@ const UserSchema = new mongoose.Schema(
         profileImageUrl: { type: String, default: null },
         role: { type: String, enum: ["admin", "member"], default: "member" }, //Role-Based access
         isMasterAdmin: { type: Boolean, default: false },
+        pushSubscriptions: [
+            {
+                endpoint: { type: String, required: true },
+                expirationTime: { type: Number, default: null },
+                keys: {
+                    p256dh: { type: String, required: true },
+                    auth: { type: String, required: true }
+                }
+            }
+        ]
     }, { timestamps: true }
 );
 
