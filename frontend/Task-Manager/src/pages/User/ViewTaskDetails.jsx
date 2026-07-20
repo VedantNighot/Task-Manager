@@ -381,13 +381,17 @@ const Attachments = ({ link, index, onView, onDownload }) => {
         >
           View
         </button>
-        <span className="text-gray-300 text-xs">|</span>
-        <button 
-          onClick={onDownload}
-          className="text-xs font-semibold text-slate-600 hover:underline cursor-pointer"
-        >
-          Download
-        </button>
+        {link.includes('|') && (
+          <>
+            <span className="text-gray-300 text-xs">|</span>
+            <button 
+              onClick={onDownload}
+              className="text-xs font-semibold text-slate-600 hover:underline cursor-pointer"
+            >
+              Download
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

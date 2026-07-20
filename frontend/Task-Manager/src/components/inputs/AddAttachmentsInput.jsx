@@ -92,13 +92,17 @@ const AddAttachmentsInput = ({ attachments, setAttachments }) => {
                             >
                                 View
                             </button>
-                            <span className="text-gray-300 text-xs">|</span>
-                            <button 
-                                onClick={() => handleDownload(item)}
-                                className="text-xs font-semibold text-slate-600 hover:underline cursor-pointer"
-                            >
-                                Download
-                            </button>
+                            {item.includes('|') && (
+                                <>
+                                    <span className="text-gray-300 text-xs">|</span>
+                                    <button 
+                                        onClick={() => handleDownload(item)}
+                                        className="text-xs font-semibold text-slate-600 hover:underline cursor-pointer"
+                                    >
+                                        Download
+                                    </button>
+                                </>
+                            )}
                         </div>
 
                         <button className="cursor-pointer shrink-0"
