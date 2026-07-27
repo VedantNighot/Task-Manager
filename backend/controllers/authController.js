@@ -83,8 +83,10 @@ const registerUser = async (req, res) => {
 };
 
 // @desc Login User
-// @route POST /api/auth/registeer
+// @route POST /api/auth/login
 // @access Public
+const loginUser = async (req, res) => {
+    try {
         const { email, password } = req.body || {};
         if (!email || !password) {
             return res.status(400).json({ message: "Email and password are required" });
@@ -109,7 +111,7 @@ const registerUser = async (req, res) => {
         });
 
     } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message })
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 };
 
